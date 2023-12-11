@@ -6,6 +6,8 @@ test.txt
 # Dependency directories
 pnpm-lock.yaml
 yarn.lock
+.env
+.gitignore
 
 # Optional: Logs and debugging
 npm-debug.log*
