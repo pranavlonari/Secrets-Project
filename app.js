@@ -110,11 +110,27 @@ app.get("/register", function (req, res) {
 });
 
 app.get("/secrets", function (req, res) {
-  if (req.isAuthenticated()) {
-    res.render("secrets");
-  } else {
-    res.redirect("/login");
+  // if (req.isAuthenticated()) {
+  //   res.render("secrets");
+  // } else {
+  //   res.redirect("/login");
+  // }
+
+  // Check if the user is authenticated
+  if (!req.isAuthenticated()) {
+    return res.redirect("/login");
   }
+
+  // Retrieve users with non-null secrets from the database using promises
+  User.find({ secret: { $ne: null } })
+    .then((foundUsers) => {
+      // Render the "secrets" view with the found users
+      res.render("secrets", { userWithSecrets: foundUsers });
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).send("Internal Server Error");
+    });
 });
 
 app.get("/submit", function (req, res) {
@@ -124,8 +140,26 @@ app.get("/submit", function (req, res) {
     res.redirect("/login");
   }
 });
-app.post("/submit", function (req, res) {
+app.post("/submit", async function (req, res) {
   const submittedSecret = req.body.secret;
+  console.log(req.user.id);
+
+  try {
+    const foundUser = await User.findById(req.user.id);
+    if (!foundUser) {
+      console.error("User not found");
+      return res.status(404).send("User not found");
+    }
+
+    foundUser.secret = submittedSecret;
+
+    await foundUser.save();
+
+    res.redirect("/secrets");
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).send("Internal Server Error");
+  }
 });
 app.get("/logout", function (req, res) {
   req.logout(function (err) {
