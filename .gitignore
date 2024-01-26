@@ -1,7 +1,6 @@
 # Node.js
 node_modules/
-package.json
-package-lock.json
+
 test.txt
 # Dependency directories
 pnpm-lock.yaml
